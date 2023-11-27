@@ -1,8 +1,8 @@
-function [hAx, cAx] = plotMap(mapVals, mapGrid, mapHeight, hAx, duplicateFig, cBarLabel, cBarLims, figSize)
+function [hAx, cAx, surfAx] = plotMap(mapVals, mapGrid, mapHeight, hAx, duplicateFig, cBarLabel, cBarLims, figSize)
 if ~exist('mapHeight', 'var') || isempty(mapHeight)
     mapHeight = 0; % should be lower than floor plan or src/rcv pos
 end
-if ~exist('figSize', 'var')
+if ~exist('figSize', 'var') || isempty(figSize)
     figSize = [200 200 700 700];
 end
 if ~exist('hAx', 'var') || isempty(hAx) 
@@ -35,7 +35,7 @@ if duplicateFig
 end
 
 % Surface plot with map values
-surf(hAx, mapGrid.XX, mapGrid.YY, 0*mapVals+mapHeight, mapVals, 'EdgeColor', 'none', 'FaceColor', 'interp');
+surfAx = surf(hAx, mapGrid.XX, mapGrid.YY, 0*mapVals+mapHeight, mapVals, 'EdgeColor', 'none', 'FaceColor', 'interp');
 
 % Colorbar
 cAx = colorbar(hAx);
