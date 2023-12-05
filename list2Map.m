@@ -14,14 +14,14 @@ xAx = mapMins(1):mapRes:mapMaxs(1);
 yAx = mapMins(2):mapRes:mapMaxs(2);
 [XX, YY] = meshgrid(xAx, yAx);
 
-mapVals = nan([size(XX), size(listVals, 2)]);
+mapVals = nan([size(XX), size(listVals, [2, 3])]);
 for mapIdx=1:numel(XX)
     if isInsideBoundary([XX(mapIdx), YY(mapIdx)], mapBoundaries)
         distancesToListPos = vecnorm(listPos - [XX(mapIdx), YY(mapIdx)], 2, 2);
         [~, closestPosIdx] = min(distancesToListPos);
 
         [row, col] = ind2sub(size(XX), mapIdx);
-        mapVals(row, col, :) = listVals(closestPosIdx, :);
+        mapVals(row, col, :, :) = listVals(closestPosIdx, :, :);
     end
 end
 

@@ -14,7 +14,13 @@ aVals = zeros(nEDFs, nCommonSlopes);
 nVals = zeros(nEDFs, 1);
 mseVals = zeros(nEDFs, 1);
 
+bb=0; % for progress bar
 for mIdx=1:nEDFs  
+    % Progress bar
+    pstr = sprintf('Progress: Measurement %d / %d [%.02f %%%%]. \n', mIdx, nEDFs, 100*mIdx/nEDFs);
+    fprintf([repmat('\b',[1 bb]),pstr]) %erase current line with backspaces
+    bb = length(pstr)-1;
+    
     % Resample EDF to 100 samples
     thisEDF_norm_ds = resample(edfs_norm(mIdx, :).', 100, L, 0, 5);
     thisEDF_norm_db_ds = 10*log10(thisEDF_norm_ds);
