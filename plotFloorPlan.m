@@ -2,7 +2,7 @@ function hAx = plotFloorPlan(lineVertices, lineHeight, lineWidth, hAx, figSize)
 % lineVertices: [lineIdx x (from xy, to xy)], or cell array with multiple
 % arrays of that shape
 if ~exist('lineHeight', 'var') || isempty(lineHeight)
-    lineHeight = 1; % should be higher than map
+    lineHeight = 0.1; % should be higher than map
 end
 if ~exist('lineWidth', 'var') || isempty(lineWidth)
     lineWidth = 4;

@@ -20,17 +20,18 @@ fprintf('Mean MSE: %.02f dB.\n', dbMSE_standard.avgMSE);
 fprintf('Median MSE: %.02f dB, 95%% quantile: %.02f dB.\n', dbMSE_standard.medianMSE, dbMSE_standard.q95MSE);
 
 %% Determine common decay times from k-means method
+disp('==== Determine common decay times ====');
 [commonDecayTimes, clusteredTVals] = determineCommonDecayTimes(tVals_standard, nCommonSlopes, histResolution);
 
 plotDecayTimeHist(clusteredTVals, commonDecayTimes, histResolution)
 
 % Display results
-disp('==== Determine common decay times ====');
 for sIdx=1:nCommonSlopes
     fprintf('Common decay time T%d = %.02f s.\n', sIdx, commonDecayTimes(sIdx));
 end
 
 %% Fit common-slopes to measurements
+disp('==== Fitting common-slope model to data ====');
 [aVals, nVals, dbMSE] = commonSlopeFit(edfs, commonDecayTimes, fs, plotFits);
 
 disp('==== Common-slope decay analysis results ====');

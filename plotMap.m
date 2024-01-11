@@ -1,4 +1,4 @@
-function [hAx, cAx, surfAx] = plotMap(mapVals, mapGrid, mapHeight, hAx, duplicateFig, cBarLabel, cBarLims, figSize)
+function [hAx, cAx, surfAx] = plotMap(mapVals, mapGrid, mapHeight, hAx, duplicateFig, cBarLabel, cBarLims, cBarDelta, figSize)
 if ~exist('mapHeight', 'var') || isempty(mapHeight)
     mapHeight = 0; % should be lower than floor plan or src/rcv pos
 end
@@ -35,6 +35,20 @@ if duplicateFig
 end
 
 % Surface plot with map values
+% mapVals = imgaussfilt(mapVals, 1.5, 'FilterDomain', 'spatial');
+filtWidth = 3;
+filtSigma = 2;
+imageFilter=fspecial('gaussian',filtWidth,filtSigma);
+try
+    mapVals = nanconv(mapVals,imageFilter, 'nanout');
+catch
+    disp('=== WARNING ===');
+    disp('Looks like the nanconv function is missing.');
+    disp('It makes the plots smooth and a bit nicer (no spilling over between rooms).')
+    disp('You can get it from here: https://se.mathworks.com/matlabcentral/fileexchange/41961-nanconv');
+    disp('Plotting without interpolation for now.');
+end
+
 surfAx = surf(hAx, mapGrid.XX, mapGrid.YY, 0*mapVals+mapHeight, mapVals, 'EdgeColor', 'none', 'FaceColor', 'interp');
 
 % Colorbar
@@ -45,6 +59,9 @@ if exist('cBarLabel', 'var') && ~isempty(cBarLabel)
     cAx.Label.String = cBarLabel;
 end
 if exist('cBarLims', 'var') && ~isempty(cBarLims)
-    caxis(cBarLims);
+    clim(cBarLims);
+end
+if exist('cBarDelta', 'var') && ~isempty(cBarDelta)
+    cAx.XTick = cBarLims(1):cBarDelta:cBarLims(2);
 end
 end

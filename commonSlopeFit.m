@@ -17,7 +17,7 @@ mseVals = zeros(nEDFs, 1);
 bb=0; % for progress bar
 for mIdx=1:nEDFs  
     % Progress bar
-    pstr = sprintf('Progress: Measurement %d / %d [%.02f %%%%]. \n', mIdx, nEDFs, 100*mIdx/nEDFs);
+    pstr = sprintf('Progress: Analysing EDF %d / %d [%.02f %%%%]. \n', mIdx, nEDFs, 100*mIdx/nEDFs);
     fprintf([repmat('\b',[1 bb]),pstr]) %erase current line with backspaces
     bb = length(pstr)-1;
     

@@ -16,9 +16,25 @@ yAx = mapMins(2):mapRes:mapMaxs(2);
 
 mapVals = nan([size(XX), size(listVals, [2, 3])]);
 for mapIdx=1:numel(XX)
-    if isInsideBoundary([XX(mapIdx), YY(mapIdx)], mapBoundaries)
+    [insideBoundary, whichBoundary] = isInsideBoundary([XX(mapIdx), YY(mapIdx)], mapBoundaries);
+    onBoundary = isOnBoundary([XX(mapIdx), YY(mapIdx)], mapBoundaries);
+    if insideBoundary && ~onBoundary
         distancesToListPos = vecnorm(listPos - [XX(mapIdx), YY(mapIdx)], 2, 2);
-        [~, closestPosIdx] = min(distancesToListPos);
+        [~, sortIdx] = sort(distancesToListPos);
+        
+        % Find closest index that is in the same room
+        for dIdx=1:length(sortIdx)
+            closestPosIdx = sortIdx(dIdx);
+            
+            [~, closestPosWhichBoundary] = isInsideBoundary(listPos(closestPosIdx, :), mapBoundaries);
+            
+            % if mapPos is exactly between rooms (e.g. in aperture), it is 
+            % treated as being in both rooms. Then the closest position can 
+            % be chosen from any of the two rooms.
+            if sum(closestPosWhichBoundary==whichBoundary) >= 2
+                break;
+            end
+        end
 
         [row, col] = ind2sub(size(XX), mapIdx);
         mapVals(row, col, :, :) = listVals(closestPosIdx, :, :);
