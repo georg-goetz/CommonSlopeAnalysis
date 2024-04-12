@@ -6,19 +6,21 @@ fBands = [250, 500, 1000, 2000];
 plotFits = false;
 plotMaps = true;
 
-% Params for ERTD1
-% allNAnalysisSlopes = [2, 2, 2, 2]; % nSlopes during traditional fitting
-% allNCommonSlopes = [3, 3, 2, 2];
-
-% Params for ERTD2
-allNAnalysisSlopes = [3, 3, 3, 3]; % nSlopes during traditional fitting
-allNCommonSlopes = [3, 3, 3, 3];
-
 histResolution = 0.05;
 mapRes = 0.2;
 
 dataDir = 'data';
-datasetName = 'ertd2';
+datasetName = 'ertd1';
+
+if strcmp(datasetName, 'ertd1')
+    % Params for ERTD1
+    allNAnalysisSlopes = [2, 2, 2, 2]; % nSlopes during traditional fitting
+    allNCommonSlopes = [3, 3, 2, 2];
+elseif strcmp(datasetName, 'ertd2')
+    % Params for ERTD2
+    allNAnalysisSlopes = [3, 3, 3, 3]; % nSlopes during traditional fitting
+    allNCommonSlopes = [3, 3, 3, 3];
+end
 
 % Specify room walls as individual lines, given by [x_from, y_from, x_to, y_to]
 % Room 1
@@ -43,7 +45,7 @@ colors = lines(3);
 
 % Additional dependencies
 toolboxDir = '/Users/gotzg1/Documents/MATLAB/Toolboxes';
-deps = {'DecayFitNet', 'CommonSlopeAnalysis', 'export_fig'};
+deps = {'DecayFitNet', 'CommonSlopeAnalysis', 'export_fig', 'nanconv'};
 for dIdx = 1:numel(deps)
     addpath(genpath(fullfile(toolboxDir, deps{dIdx})));
 end
@@ -56,15 +58,17 @@ assert(length(fBands) == length(allNAnalysisSlopes), 'Number of  analysis slopes
 disp('==== Reading dataset ====')
 disp('This may take a while.')
 load(fullfile(dataDir, datasetName, sprintf('%s.mat', datasetName)));
-rirs = roomTransitionSimulation.rirs.' + randn(size(roomTransitionSimulation.rirs.'))*2e-8;
-srcPos = roomTransitionSimulation.src(1:3);
-rcvPos = roomTransitionSimulation.rcv;
+rirs = ertd.rirs.';
+srcPos = ertd.srcPos(1:3);
+rcvPos = ertd.rcvPos;
 fs = 48000;
 
-clear roomTransitionSimulation;
+clear ertd;
 
 %% Do common-slope analysis in bands, get maps, and plot
 for bIdx=3:length(fBands)
+    rng(42);
+    fprintf('======= Working on band %d Hz. =======\n', fBands(bIdx));
     analysisBand = fBands(bIdx);
     nAnalysisSlopes = allNAnalysisSlopes(bIdx);
     nCommonSlopes = allNCommonSlopes(bIdx);
@@ -84,15 +88,18 @@ for bIdx=3:length(fBands)
     %% Plot maps
     if plotMaps
         % Plot aVal maps
-        % cBarLims = [-20, 0; -19, -10; -45, -25]; %ERTD1
-        cBarLims = [-25, 0; -30, -15; -45, -25]; %ERTD2
+        if strcmp(datasetName, 'ertd1')
+            cBarLims = [-20, 0; -19, -10; -45, -25]; %ERTD1
+        elseif strcmp(datasetName, 'ertd2')
+            cBarLims = [-25, 0; -30, -15; -45, -25]; %ERTD2
+        end
         
         for sIdx=1:nCommonSlopes
             % Generate colorbar label
             cBarLabel = sprintf('$$A_{%d,\\textbf{x}}$$ [in dB]', sIdx);
         
             % Plot map
-            [hAx, ~] = plotMap(10*log10(mapAVals(:, :, sIdx)), mapGrid, [], [], false, cBarLabel, cBarLims(sIdx,:), figSize);
+            [hAx, ~] = plotMap(10*log10(mapAVals(:, :, sIdx)), mapGrid, [], [], false, cBarLabel, cBarLims(sIdx,:), 5, figSize);
             
             % Plot floor plan
             plotFloorPlan(walls, [], [], hAx, figSize);
@@ -108,7 +115,7 @@ for bIdx=3:length(fBands)
         
         % Plot nVal map and export figure
         cBarLabel = '$$N_{0,\textbf{x}}$$ [in dB]';
-        [hAx, ~] = plotMap(10*log10(mapNVals), mapGrid, [], [], false, cBarLabel, [], figSize);
+        [hAx, ~] = plotMap(10*log10(mapNVals), mapGrid, [], [], false, cBarLabel, [-100, 0], 5, figSize);
         plotFloorPlan(walls, [], [], hAx, figSize);
         plotSrcRcvPos(srcPos, 'src', [], [], colors(2,:), hAx);
         setLimsAndTicks(limsAndTicks);
@@ -117,7 +124,7 @@ for bIdx=3:length(fBands)
         
         % Plot dBMSE map
         cBarLabel = 'dB-MSE [in dB]';
-        [hAx, ~] = plotMap(mapDbMSE, mapGrid, [], [], false, cBarLabel, [0, 3], figSize);
+        [hAx, ~] = plotMap(mapDbMSE, mapGrid, [], [], false, cBarLabel, [0, 3], 1, figSize);
         plotFloorPlan(walls, [], [], hAx, figSize);
         plotSrcRcvPos(srcPos, 'src', [], [], colors(2,:), hAx);
         setLimsAndTicks(limsAndTicks);
